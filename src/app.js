@@ -1,5 +1,6 @@
 'use strict';
 
+global.jQuery = require("jQuery");
 const bootstrap = require("bootstrap");
 const THREE = require("three");
 const tween = require("tween.js");
