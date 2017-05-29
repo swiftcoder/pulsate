@@ -55473,14 +55473,17 @@ TWEEN.Interpolation = {
 },{"_process":15}],18:[function(require,module,exports){
 module.exports = function parse(params){
       var template = " \n" +
-"const vec3 light = vec3(0,1,1); \n" +
+"const vec3 light = vec3(0,0.7,0.7); \n" +
 " \n" +
 "varying vec3 vNormal; \n" +
 " \n" +
 "void main() { \n" +
-"    float d = dot(vNormal, light); \n" +
-"    vec3 color = vec3(0.5, 0, 0.5); \n" +
-"    gl_FragColor = vec4(color * d, 1); \n" +
+"    vec3 normal = normalize(vNormal); \n" +
+"    float d = dot(normal, light); \n" +
+"    float h = 0.5 * d + 0.5; \n" +
+"    vec3 topColor = vec3(0.5, 0.0, 0.5); \n" +
+"    vec3 botColor = vec3(0.0, 0.5, 0.5); \n" +
+"    gl_FragColor = vec4(mix(botColor, topColor, h), 1); \n" +
 "} \n" +
 " \n" 
       params = params || {}
@@ -55494,12 +55497,12 @@ module.exports = function parse(params){
 },{}],19:[function(require,module,exports){
 module.exports = function parse(params){
       var template = " \n" +
-"uniform float time; \n" +
+"uniform float size, time; \n" +
 " \n" +
 "varying vec3 vNormal; \n" +
 " \n" +
 "void main() { \n" +
-"    vec3 scaledPosition = position * clamp(time, 0.0, 2.0); \n" +
+"    vec3 scaledPosition = position * size * clamp(time, 0.0, 2.0); \n" +
 "    vec4 mvPosition = modelViewMatrix * vec4(scaledPosition, 1.0); \n" +
 "    gl_Position = projectionMatrix * mvPosition; \n" +
 " \n" +
@@ -55551,21 +55554,24 @@ var init = function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 3000);
     scene.add(camera);
-    camera.position.set(0, 0, 10);
+    camera.position.set(0, 10, 30);
 
     geometry = new THREE.BoxGeometry(1, 1, 1);
     group = new THREE.Group();
     scene.add(group);
 
-    buildTree(new THREE.Vector3(0, -5, 0), new THREE.Vector3(0, 1, 0), 1.0);
+    buildTree(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), 1.0);
 };
 
 var buildTree = function buildTree(start, dir, size) {
-    var count = 10;
+    var pos = void 0;
+
+    var count = 5 + Math.random() * 5;
     for (var i = 0; i < count; ++i) {
         var material = new THREE.ShaderMaterial({
             uniforms: {
-                time: { value: 0 }
+                time: { value: 0 },
+                size: { value: size }
             },
             vertexShader: vs(),
             fragmentShader: fs()
@@ -55573,7 +55579,7 @@ var buildTree = function buildTree(start, dir, size) {
 
         var cube = new THREE.Mesh(geometry, material);
 
-        var pos = new THREE.Vector3();
+        pos = new THREE.Vector3();
         pos.add(dir);
         pos.multiplyScalar(i);
         pos.add(start);
@@ -55583,13 +55589,21 @@ var buildTree = function buildTree(start, dir, size) {
 
         cubes.push(cube);
     }
+
+    if (size < 0.5) {
+        return;
+    }
+
+    var branches = Math.random() * 8 * size;
+    for (var i = 0; i < branches; ++i) {
+        buildTree(pos, new THREE.Vector3(Math.random() - 0.5, 0.25, Math.random() - 0.5), size * 0.8);
+    }
 };
 
 var render = function render() {
     requestAnimationFrame(render);
     renderer.render(scene, camera);
 
-    group.rotation.x += .01;
     group.rotation.y += .01;
 
     time += 0.1;

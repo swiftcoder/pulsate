@@ -33,21 +33,24 @@ let init = () => {
         3000
     );
     scene.add(camera);
-    camera.position.set(0, 0, 10);
+    camera.position.set(0, 10, 30);
 
     geometry = new THREE.BoxGeometry(1, 1, 1);
     group = new THREE.Group();
     scene.add(group);
 
-    buildTree(new THREE.Vector3(0,-5,0), new THREE.Vector3(0,1,0), 1.0);
+    buildTree(new THREE.Vector3(0,0,0), new THREE.Vector3(0,1,0), 1.0);
 }
 
 let buildTree = (start, dir, size) => {
-    let count = 10;
+    let pos;
+
+    let count = 5 + Math.random() * 5;
     for (var i = 0; i < count; ++i) {
         var material = new THREE.ShaderMaterial({
                     uniforms: {
-                        time: {value: 0}
+                        time: {value: 0},
+                        size: {value: size}
                     },
                     vertexShader: vs(),
                     fragmentShader: fs()
@@ -55,7 +58,7 @@ let buildTree = (start, dir, size) => {
 
         var cube = new THREE.Mesh(geometry, material);
 
-        var pos = new THREE.Vector3();
+        pos = new THREE.Vector3();
         pos.add(dir);
         pos.multiplyScalar(i);
         pos.add(start);
@@ -65,13 +68,21 @@ let buildTree = (start, dir, size) => {
 
         cubes.push(cube);
     }
+
+    if (size < 0.5) {
+        return;
+    }
+
+    let branches = Math.random()*8*size;
+    for (var i = 0; i < branches; ++i) {
+        buildTree(pos, new THREE.Vector3(Math.random()-0.5, 0.25, Math.random()-0.5), size*0.8);
+    }
 }
 
 let render = () => {
     requestAnimationFrame(render);
     renderer.render(scene, camera);
 
-    group.rotation.x += .01;
     group.rotation.y += .01;
 
     time += 0.1;
