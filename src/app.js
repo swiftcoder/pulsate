@@ -73,9 +73,14 @@ let buildTree = (start, dir, size) => {
         return;
     }
 
-    let branches = Math.random()*8*size;
+    size *= 0.8;
+
+    let branches = 1 + Math.random()*5*size;
     for (var i = 0; i < branches; ++i) {
-        buildTree(pos, new THREE.Vector3(Math.random()-0.5, 0.25, Math.random()-0.5), size*0.8);
+        let branchDir = new THREE.Vector3(Math.random()-0.5, 0.25, Math.random()-0.5);
+        branchDir.normalize();
+        branchDir.multiplyScalar(size);
+        buildTree(pos, branchDir, size);
     }
 }
 
