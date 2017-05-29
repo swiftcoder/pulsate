@@ -55475,13 +55475,17 @@ module.exports = function parse(params){
       var template = " \n" +
 "const vec3 light = vec3(0,0.7,0.7); \n" +
 " \n" +
+"uniform float time; \n" +
+" \n" +
 "varying vec3 vNormal; \n" +
 " \n" +
 "void main() { \n" +
 "    vec3 normal = normalize(vNormal); \n" +
 "    float d = dot(normal, light); \n" +
 "    float h = 0.5 * d + 0.5; \n" +
-"    vec3 topColor = vec3(0.5, 0.0, 0.5); \n" +
+"    vec3 darkColor = vec3(0.5, 0.0, 0.5); \n" +
+"    vec3 lightColor = vec3(0.8, 0.2, 0.8); \n" +
+"    vec3 topColor = mix(darkColor, lightColor, tan(time)); \n" +
 "    vec3 botColor = vec3(0.0, 0.5, 0.5); \n" +
 "    gl_FragColor = vec4(mix(botColor, topColor, h), 1); \n" +
 "} \n" +
